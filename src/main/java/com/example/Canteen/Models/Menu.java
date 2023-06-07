@@ -5,6 +5,11 @@ public class Menu {
     private long id;
     private String name;
     private String description;
+<<<<<<< HEAD
+=======
+    private long price;
+    private String image;
+>>>>>>> d9d7865 (Update)
     private Date createdAt;
 
 
@@ -25,6 +30,13 @@ public class Menu {
     public String getDescription() {
         return description;
     }
+<<<<<<< HEAD
+=======
+    public long getPrice() { return price; }
+    public String getImage() {
+        return image;
+    }
+>>>>>>> d9d7865 (Update)
 
     public Date getCreatedAt() {
         return createdAt;
@@ -43,6 +55,14 @@ public class Menu {
     public void setDescription(String description) {
         this.description = description;
     }
+<<<<<<< HEAD
+=======
+    public void setPrice(long price) { this.price = price; }
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+>>>>>>> d9d7865 (Update)
     public void setCreatedAt(Date date){
         this.createdAt = date;
     }
