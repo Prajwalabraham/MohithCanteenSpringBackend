@@ -1,9 +1,11 @@
 package com.example.Canteen.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
     private Long id;
     private String username;

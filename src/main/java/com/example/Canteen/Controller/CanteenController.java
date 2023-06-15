@@ -13,13 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 public class CanteenController {
-    private static final String USERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\BackendForCMS\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
-    private static final String MENU_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\BackendForCMS\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
-    private static final String ORDERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\BackendForCMS\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
+    private static final String USERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
+    private static final String MENU_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
+    private static final String ORDERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
 
 
     private final List<Menu> menus = new ArrayList<>();
@@ -52,6 +53,7 @@ public class CanteenController {
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("userId", newUser.getId());
             responseBody.put("username", newUser.getUsername());
+            responseBody.put("role", newUser.getRole());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
         } catch (IOException e) {
@@ -74,6 +76,7 @@ public class CanteenController {
                     Map<String, Object> responseBody = new HashMap<>();
                     responseBody.put("userId", user.getId());
                     responseBody.put("username", user.getUsername());
+                    responseBody.put("role", user.getRole());
 
                     return ResponseEntity.status(HttpStatus.OK).body(responseBody);
                 }
@@ -184,7 +187,7 @@ public class CanteenController {
         }
     }
 
-    @PostMapping("/orders")
+    @PostMapping("/orders/add")
     public ResponseEntity<String> placeOrder(@RequestBody orders order) {
         try {
             System.out.println("Received placeOrder request with requestBody: " + order);
@@ -216,4 +219,19 @@ public class CanteenController {
             gson.toJson(orders, fileWriter);
         }
     }
+
+    @GetMapping("/orders/{username}")
+    public ResponseEntity<List<orders>> getOrdersByUsername(@PathVariable String username) {
+        // Load orders from JSON file
+        List<orders> orders = loadOrdersFromJsonFile();
+
+        // Filter orders by username
+        List<orders> filteredOrders = orders.stream()
+                .filter(order -> order.getUsername().equals(username))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.OK).body(filteredOrders);
+    }
+
+
 }
