@@ -17,9 +17,9 @@ import java.util.*;
 @RestController
 @RequestMapping("/api")
 public class CanteenController {
-    private static final String USERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
-    private static final String MENU_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
-    private static final String ORDERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
+    private static final String USERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\BackendForCMS\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
+    private static final String MENU_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\BackendForCMS\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
+    private static final String ORDERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\BackendForCMS\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
 
 
     private final List<Menu> menus = new ArrayList<>();
