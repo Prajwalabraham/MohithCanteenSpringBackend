@@ -3,16 +3,14 @@ package com.example.Canteen.Controller;
 import com.example.Canteen.Models.Menu;
 import com.example.Canteen.Models.User;
 import com.example.Canteen.Models.orders;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -23,7 +21,7 @@ public class CanteenController {
     private static final String MENU_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
     private static final String ORDERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
 
-    private final List<User> users = new ArrayList<>();
+
     private final List<Menu> menus = new ArrayList<>();
 
     @GetMapping("/hi")
@@ -31,76 +29,94 @@ public class CanteenController {
         return "Hello";
     }
 
+    private final List<User> users = new ArrayList<>();
+
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody User user) {
+    public ResponseEntity<Object> signUp(@RequestBody User newUser) {
         try {
-            System.out.println("Received signup request with requestBody: " + user);
+            // Load existing users from the JSON file
+            loadUsers();
 
-            // Check if the user already exists
-            if (userExists(user)) {
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("User already exists.");
-            }
+            // Set the ID for the new user
+            Long nextId = getNextUserId();
+            newUser.setId(nextId);
 
-            // Assign a unique ID to the user
-            user.setId(generateUserId());
+            // Add the new user to the list
+            users.add(newUser);
 
-            // Set the default role to "user"
-            user.setRole("user");
+            // Save the updated user list to the JSON file
+            saveUsers();
 
-            // Add the user to the list
-            users.add(user);
+            // Create a response payload with the userID and username
+            // You can customize the response structure as per your requirements
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("userId", newUser.getId());
+            responseBody.put("username", newUser.getUsername());
 
-            // Save the updated list to the JSON file
-            saveUsersToJsonFile();
-
-            return ResponseEntity.status(HttpStatus.CREATED).body("Signup successful!");
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during signup.");
-        }
-    }
-
-    private boolean userExists(User user) {
-        return users.stream().anyMatch(existingUser -> existingUser.getUsername().equals(user.getUsername()));
-    }
-
-    // Helper method to generate a unique user ID
-    private Long generateUserId() {
-        return System.currentTimeMillis(); // You can implement your own ID generation logic
-    }
-
-    // Helper method to save the users list to the JSON file
-    private void saveUsersToJsonFile() throws IOException {
-        try (FileWriter fileWriter = new FileWriter(USERS_FILE_PATH)) {
-            Gson gson = new Gson();
-
-            gson.toJson(users, fileWriter);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during signup");
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
-        Optional<User> optionalUser = findUserByUsernameAndPassword(user.getUsername(), user.getPassword());
-        if (optionalUser.isPresent()) {
-            User loggedInUser = optionalUser.get();
-            Map<String, String> response = new HashMap<>();
-            response.put("username", loggedInUser.getUsername());
-            response.put("role", loggedInUser.getRole());
-            response.put("id", String.valueOf(loggedInUser.getId()));
-            response.put("password", loggedInUser.getPassword());
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid username or password.");
+    public ResponseEntity<Object> login(@RequestBody User loginUser) {
+        try {
+            // Load existing users from the JSON file
+            loadUsers();
+
+            // Find the user with matching username and password
+            for (User user : users) {
+                if (user.getUsername().equals(loginUser.getUsername()) && user.getPassword().equals(User.hashPassword(loginUser.getPassword()))) {
+                    // Create a response payload with the userID and username
+                    // You can customize the response structure as per your requirements
+                    Map<String, Object> responseBody = new HashMap<>();
+                    responseBody.put("userId", user.getId());
+                    responseBody.put("username", user.getUsername());
+
+                    return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during login");
+        }
+    }
+    // Helper method to load users from the JSON file
+    private void loadUsers() throws IOException {
+        File file = new File(USERS_FILE_PATH);
+
+        // If the file exists, load the users
+        if (file.exists()) {
+            ObjectMapper mapper = new ObjectMapper();
+            users.clear();
+            users.addAll(mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(List.class, User.class)));
         }
     }
 
+    // Helper method to save users to the JSON file
+    private void saveUsers() throws IOException {
+        File file = new File(USERS_FILE_PATH);
 
-    private Optional<User> findUserByUsernameAndPassword(String username, String password) {
-        return users.stream()
-                .filter(user -> user.getUsername().equals(username) && user.getPassword().equals(password))
-                .findFirst();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(file, users);
     }
 
+    // Helper method to generate the next available user ID
+    private Long getNextUserId() {
+        Long maxId = 0L;
+        for (User user : users) {
+            if (user.getId() > maxId) {
+                maxId = user.getId();
+            }
+        }
+        return maxId + 1;
+    }
+
+    //----------------------------------------------Login--------------------------------------------------------------------//
     @GetMapping("/menu")
     public ResponseEntity<List<Menu>> getMenu() {
         return ResponseEntity.status(HttpStatus.OK).body(menus);
