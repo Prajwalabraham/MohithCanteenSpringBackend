@@ -2,12 +2,12 @@ package com.example.Canteen.Models;
 import java.util.Date;
 
 public class Menu {
-    private long id;
+    private Long id;
     private String name;
     private String description;
 
 
-    private long price;
+    private Long price;
     private String image;
 
     private Date createdAt;
@@ -18,9 +18,12 @@ public class Menu {
     }
 
     // Getter methods
-
-    public long getId() {
+    public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -44,9 +47,6 @@ public class Menu {
 
     // Setter methods
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public void setName(String name) {
         this.name = name;

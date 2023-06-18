@@ -5,7 +5,6 @@ import java.util.Date;
 public class orders {
     private long id;
     private long menuId;
-    private long userId;
     private long price;
     private String MenuDescription;
     private String MenuName;
@@ -43,15 +42,6 @@ public class orders {
     public void setMenuId(long menuId) {
         this.menuId = menuId;
     }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
-
     public long getPrice() {
         return price;
     }
