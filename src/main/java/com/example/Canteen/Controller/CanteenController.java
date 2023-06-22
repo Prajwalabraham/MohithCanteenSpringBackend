@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api")
 public class CanteenController {
-    private static final String USERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
-    private static final String MENU_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
-    private static final String ORDERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
+    private static final String USERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\MohithCanteenSpringBackend\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
+    private static final String MENU_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\MohithCanteenSpringBackend\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
+    private static final String ORDERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\MohithCanteenSpringBackend\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
 
 
     private final List<Menu> menus = new ArrayList<>();
@@ -120,10 +120,39 @@ public class CanteenController {
     }
 
     //----------------------------------------------Login--------------------------------------------------------------------//
+    private List<Menu> loadMenuFromJsonFile() {
+        try (Reader reader = new FileReader(MENU_FILE_PATH)) {
+            Gson gson = new Gson();
+            Type menuListType = new TypeToken<List<Menu>>() {
+            }.getType();
+
+            return gson.fromJson(reader, menuListType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>(); // Return an empty list if there was an error reading the file
+        }
+    }
+
+    private void loadMenus() throws IOException {
+        File file = new File(MENU_FILE_PATH);
+
+        // If the file exists, load the users
+        ObjectMapper mapper;
+        if (file.exists()) {
+        }
+        mapper = new ObjectMapper();
+        menus.clear();
+        menus.addAll(mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(List.class, Menu.class)));
+    }
+
+
     @GetMapping("/menu")
     public ResponseEntity<List<Menu>> getMenu() {
+
+        List<Menu> menus = loadMenuFromJsonFile();
         return ResponseEntity.status(HttpStatus.OK).body(menus);
     }
+
 
     @PostMapping("/menu")
     public ResponseEntity<String> addToMenu(@RequestBody Menu menu) {
@@ -164,6 +193,32 @@ public class CanteenController {
             Gson gson = new Gson();
 
             gson.toJson(menus, fileWriter);
+        }
+    }
+
+    @DeleteMapping("/menu/{id}")
+    public ResponseEntity<String> deleteMenuItem(@PathVariable("id") Long id) {
+        try {
+            loadMenus();
+            System.out.println("Received deleteMenuItem request with ID: " + id);
+            System.out.print(menus);
+            // Find the menu item with the given ID
+            Optional<Menu> optionalMenu = menus.stream().filter(menu -> menu.getId().equals(id)).findFirst();
+
+            if (optionalMenu.isPresent()) {
+                // Remove the menu item from the list
+                menus.remove(optionalMenu.get());
+
+                // Save the updated list to the JSON file
+                saveMenuToJsonFile();
+
+                return ResponseEntity.ok("Menu item deleted successfully!");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu item not found.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while deleting menu item.");
         }
     }
 
@@ -254,7 +309,8 @@ public class CanteenController {
     private List<orders> loadOrdersFromJsonFile() {
         try (Reader reader = new FileReader(ORDERS_FILE_PATH)) {
             Gson gson = new Gson();
-            Type orderListType = new TypeToken<List<orders>>(){}.getType();
+            Type orderListType = new TypeToken<List<orders>>() {
+            }.getType();
 
             return gson.fromJson(reader, orderListType);
         } catch (IOException e) {
@@ -263,16 +319,21 @@ public class CanteenController {
         }
     }
 
+    //--------------------------------This is processing only one at a time-------------------------------------------------//
     @PostMapping("/orders/add")
     public ResponseEntity<String> placeOrder(@RequestBody orders order) {
         try {
             System.out.println("Received placeOrder request with requestBody: " + order);
 
+            List<orders> ordersList = loadOrdersFromJsonFile();
             // Assign a unique ID to the order
             order.setId(generateOrderId());
 
-            // Save the order to the JSON file
-            saveOrderToJsonFile(order);
+            // Add the new order to the list
+            ordersList.add(order);
+
+            // Save the updated list to the JSON file
+            saveOrderToJsonFile(ordersList);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully.");
         } catch (IOException e) {
@@ -285,16 +346,14 @@ public class CanteenController {
         return System.currentTimeMillis(); // You can implement your own ID generation logic
     }
 
-    private void saveOrderToJsonFile(orders order) throws IOException {
-        List<orders> orders = loadOrdersFromJsonFile();
-        orders.add(order);
-
+    private void saveOrderToJsonFile(List<orders> orders) throws IOException {
         try (FileWriter fileWriter = new FileWriter(ORDERS_FILE_PATH)) {
             Gson gson = new Gson();
 
             gson.toJson(orders, fileWriter);
         }
     }
+
 
     @GetMapping("/orders/{username}")
     public ResponseEntity<List<orders>> getOrdersByUsername(@PathVariable String username) {
