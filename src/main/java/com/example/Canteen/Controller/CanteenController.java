@@ -167,6 +167,82 @@ public class CanteenController {
         }
     }
 
+    @DeleteMapping("/menu/{id}")
+    public ResponseEntity<String> deleteMenuEntry(@PathVariable Long id) {
+        try {
+            // Find the menu item with the matching ID
+            Optional<Menu> menuToDelete = menus.stream()
+                    .filter(menu -> menu.getId().equals(id))
+                    .findFirst();
+
+            if (menuToDelete.isPresent()) {
+                // Remove the menu item from the list
+                menus.remove(menuToDelete.get());
+
+                // Save the updated list to the JSON file
+                saveMenuToJsonFile();
+
+                return ResponseEntity.status(HttpStatus.OK).body("Menu entry deleted successfully.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu entry not found.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while deleting menu entry.");
+        }
+    }
+
+
+    @PutMapping("/menu/{id}")
+    public ResponseEntity<String> updateMenuEntry(@PathVariable Long id, @RequestBody Menu updatedMenu) {
+        try {
+            // Find the menu item with the matching ID
+            Optional<Menu> menuToUpdate = menus.stream()
+                    .filter(menu -> menu.getId().equals(id))
+                    .findFirst();
+
+            if (menuToUpdate.isPresent()) {
+                // Update the menu item
+                Menu menu = menuToUpdate.get();
+                menu.setName(updatedMenu.getName());
+                menu.setDescription(updatedMenu.getDescription());
+                menu.setPrice(updatedMenu.getPrice());
+
+                // Save the updated list to the JSON file
+                saveMenuToJsonFile();
+
+                return ResponseEntity.status(HttpStatus.OK).body("Menu entry updated successfully.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu entry not found.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while updating menu entry.");
+        }
+    }
+
+
+    @GetMapping("/menu/get/{id}")
+    public ResponseEntity<Menu> getMenuById(@PathVariable Long id) {
+        try {
+            // Find the menu item with the matching ID
+            Optional<Menu> menu = menus.stream()
+                    .filter(item -> item.getId().equals(id))
+                    .findFirst();
+
+            if (menu.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(menu.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+    //--------------------------------------------------Orders Start--------------------------------------------//
     @GetMapping("/orders")
     public ResponseEntity<List<orders>> getOrders() {
         // Load orders from JSON file
