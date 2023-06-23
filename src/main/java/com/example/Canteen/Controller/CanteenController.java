@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api")
 public class CanteenController {
-    private static final String USERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\MohithCanteenSpringBackend\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
-    private static final String MENU_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\MohithCanteenSpringBackend\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
-    private static final String ORDERS_FILE_PATH = "C:\\Users\\hp\\Desktop\\6th sem FS\\CMS\\MohithCanteenSpringBackend\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
+    private static final String USERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\users.json";
+    private static final String MENU_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\menu.json";
+    private static final String ORDERS_FILE_PATH = "C:\\Users\\prajw\\.vscode\\Juniors Project\\Canteen\\src\\main\\java\\com\\example\\Canteen\\Models\\orders.json";
 
 
     private final List<Menu> menus = new ArrayList<>();
@@ -196,31 +196,7 @@ public class CanteenController {
         }
     }
 
-    @DeleteMapping("/menu/{id}")
-    public ResponseEntity<String> deleteMenuItem(@PathVariable("id") Long id) {
-        try {
-            loadMenus();
-            System.out.println("Received deleteMenuItem request with ID: " + id);
-            System.out.print(menus);
-            // Find the menu item with the given ID
-            Optional<Menu> optionalMenu = menus.stream().filter(menu -> menu.getId().equals(id)).findFirst();
 
-            if (optionalMenu.isPresent()) {
-                // Remove the menu item from the list
-                menus.remove(optionalMenu.get());
-
-                // Save the updated list to the JSON file
-                saveMenuToJsonFile();
-
-                return ResponseEntity.ok("Menu item deleted successfully!");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu item not found.");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while deleting menu item.");
-        }
-    }
 
     @DeleteMapping("/menu/{id}")
     public ResponseEntity<String> deleteMenuEntry(@PathVariable Long id) {
